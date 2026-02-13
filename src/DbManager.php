@@ -134,6 +134,67 @@ class DbManager
     public function setConfig($config): void
     {
         $this->config = $config;
+
+        // 从配置中解析并初始化缓存
+        if (isset($config['cache'])) {
+            $this->parseCacheConfig($config['cache']);
+        }
+    }
+
+    /**
+     * 解析缓存配置并初始化缓存对象
+     *
+     * @param mixed $cacheConfig 缓存配置（对象、类名或配置数组）
+     *
+     * @return void
+     */
+    protected function parseCacheConfig($cacheConfig): void
+    {
+        // 如果是对象且已实现 CacheInterface，直接设置
+        if (is_object($cacheConfig) && $cacheConfig instanceof CacheInterface) {
+            $this->setCache($cacheConfig);
+            return;
+        }
+
+        // 如果是对象（自定义缓存处理器），使用 setCacheHandler
+        if (is_object($cacheConfig)) {
+            $this->setCacheHandler($cacheConfig);
+            return;
+        }
+
+        // 如果是类名字符串，实例化该类
+        if (is_string($cacheConfig) && class_exists($cacheConfig)) {
+            $cacheInstance = new $cacheConfig();
+
+            if ($cacheInstance instanceof CacheInterface) {
+                $this->setCache($cacheInstance);
+            } else {
+                $this->setCacheHandler($cacheInstance);
+            }
+            return;
+        }
+
+        // 如果是配置数组，创建对应的缓存实例
+        if (is_array($cacheConfig)) {
+            $class = $cacheConfig['class'] ?? null;
+            $params = $cacheConfig['params'] ?? [];
+
+            if ($class && class_exists($class)) {
+                // 使用反射实例化类，传递参数
+                if (empty($params)) {
+                    $cacheInstance = new $class();
+                } else {
+                    $reflection = new \ReflectionClass($class);
+                    $cacheInstance = $reflection->newInstanceArgs($params);
+                }
+
+                if ($cacheInstance instanceof CacheInterface) {
+                    $this->setCache($cacheInstance);
+                } else {
+                    $this->setCacheHandler($cacheInstance);
+                }
+            }
+        }
     }
 
     /**
