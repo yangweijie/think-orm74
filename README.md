@@ -26,7 +26,7 @@
 
 ## 安装
 ~~~
-composer require topthink/think-orm
+composer require yangweijie/think-orm
 ~~~
 
 ## 文档
