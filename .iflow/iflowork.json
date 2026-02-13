@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "workspace": {
+    "name": "think-orm74",
+    "createdAt": 1770947468842,
+    "preset": "starter"
+  },
+  "authorizedRoots": [
+    "D:\\git\\php\\think-orm74"
+  ]
+}
